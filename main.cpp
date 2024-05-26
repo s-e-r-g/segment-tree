@@ -1,68 +1,69 @@
 #include <iostream>
 #include <vector>
 
-template <typename Operation>
+template <typename Operation, typename ElementType>
 class SegmentTree
 {
 public:
-    SegmentTree(std::vector<int>& data)
+    SegmentTree(std::vector<ElementType>& data)
         : _size(data.size())
         , _tree(data.empty() ? 0 : data.size() - 1)
         , _data(data)
     {
-        for (int i = _size - 1; i > 0; --i)
+        for (int index = _size - 1; index > 0; --index)
         {
-            set(i, Operation()(get(i * 2), get(i * 2 + 1)));
+            set(index, Operation()(get(index * 2), get(index * 2 + 1)));
         }
     }
 
-    void update(int index, int value)
+    void update(int index, ElementType value)
     {
         index += _size;
         set(index, value);
         while (index > 1)
         {
             index /= 2;
-            set(index, Operation()(get(2 * index), get(2 * index + 1)));
+            set(index, Operation()(get(index * 2), get(index * 2 + 1)));
         }
     }
 
-    int query(int left, int right) const
+    ElementType query(int left, int right) const
     {
         left += _size;
         right += _size;
-        
-        // TODO: replace with some default value?
-        int result = 0;
+    
+        std::optional<ElementType> result;
 
         while (left <= right)
         {
             if ((left & 1) == 1)
             {
-                result = Operation()(result, get(left++));
+                result = result ? Operation()(*result, get(left)) : get(left);
+                ++left;
             }
             if ((right & 1) == 0)
             {
-                result = Operation()(result, get(right--));
+                result = result ? Operation()(*result, get(right)) : get(right);
+                --right;
             }
             left /= 2;
             right /= 2;
         }
-        return result;
+        return *result;
     }
 
 private:
     int _size;
-    std::vector<int> _tree;
-    std::vector<int>& _data;
+    std::vector<ElementType> _tree;
+    std::vector<ElementType>& _data;
 
 private:
-    int get(int index) const
+    ElementType get(int index) const
     {
         return (index < _size) ? _tree[index - 1] : _data[index - _size];
     }
 
-    void set(int index, int value)
+    void set(int index, ElementType value)
     {
         if (index < _size)
         {
@@ -78,7 +79,7 @@ private:
 int main()
 {
     std::vector<int> numbers = {1, 3, 5};
-    SegmentTree<std::plus<>> segTree(numbers);
+    SegmentTree<std::plus<>, int> segTree(numbers);
 
     std::cout << "Sum(0,2): " << segTree.query(0, 2) << std::endl;
     std::cout << "Update(1,2)" << std::endl;
