@@ -4,30 +4,51 @@
 class SegmentTree
 {
 public:
-    SegmentTree(const std::vector<int> &data);
+    SegmentTree(std::vector<int>& data);
     void update(int index, int value);
     int query(int left, int right) const;
 
 private:
     int _size;
     std::vector<int> _tree;
+    std::vector<int>& _data;
+
+    
+private:
+    int get(int index) const;
+    void set(int index, int value);
 };
 
-SegmentTree::SegmentTree(const std::vector<int> &data) 
+
+SegmentTree::SegmentTree(std::vector<int>& data) 
     : _size(data.size())
-    , _tree(2 * data.size())
-
+    , _tree(data.empty() ? data.size() : data.size() - 1)
+    , _data(data)
 {
-    for (int i = 0; i < _size; ++i)
-    {
-        _tree[_size + i] = data[i];
-    }
-
     for (int i = _size - 1; i > 0; --i)
     {
-        _tree[i] = _tree[2 * i] + _tree[2 * i + 1];
+        set(i, get(i * 2) + get(i * 2 + 1));
     }
 }
+
+
+int SegmentTree::get(int index) const
+{
+    return  (index < _size) ? _tree[index - 1] : _data[index - _size];
+}
+
+void SegmentTree::set(int index, int value)
+{
+    if (index < _size)
+    {
+        _tree[index - 1] = value;
+    }
+    else
+    {
+        _data[index - _size] = value;
+    }
+}
+
 
 int SegmentTree::query(int left, int right) const
 {
@@ -38,11 +59,11 @@ int SegmentTree::query(int left, int right) const
     {
         if ((left & 1) == 1)
         {
-            sum += _tree[left++];
+            sum += get(left++);
         }
         if ((right & 1) == 0)
         {
-            sum += _tree[right--];
+            sum += get(right--);
         }
         left /= 2;
         right /= 2;
@@ -53,11 +74,11 @@ int SegmentTree::query(int left, int right) const
 void SegmentTree::update(int index, int value)
 {
     index += _size;
-    _tree[index] = value;
+    set(index, value);
     while (index > 1)
     {
         index /= 2;
-        _tree[index] = _tree[2 * index] + _tree[2 * index + 1];
+        set(index, get(2 * index) + get(2 * index + 1));
     }
 }
 
