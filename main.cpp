@@ -22,7 +22,7 @@ private:
 
 SegmentTree::SegmentTree(std::vector<int>& data) 
     : _size(data.size())
-    , _tree(data.empty() ? data.size() : data.size() - 1)
+    , _tree(data.empty() ? 0 : data.size() - 1)
     , _data(data)
 {
     for (int i = _size - 1; i > 0; --i)
