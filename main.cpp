@@ -88,10 +88,9 @@ private:
 
 std::string demangle(const char* name)
 {
-    char buffer[1024];
-    size_t size=1024;
     int status;
-    return abi::__cxa_demangle(name, buffer, &size, &status);
+    std::unique_ptr<char, void(*)(void*)> fixedName(abi::__cxa_demangle(name, nullptr, nullptr, &status), ::free);
+    return fixedName.get();
 }
 
 template <typename Operation, typename ElementType>
